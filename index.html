@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+    
+    <div id="app">
+        {{ message }}
+        <ul>
+            <li v-for="item in NonEmptyPrices">
+                <h2>{{item.title}}</h2>
+                <img :src="item.boxshotsmall">
+                <p>{{item.description}}</p>
+                <p><s>{{item.msrp}}</s> {{item.lprice}}</p>
+            </li>
+        </ul>
+
+    </div>
+
+</body>
+</html>
