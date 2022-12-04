@@ -1,27 +1,67 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/main.css">
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="app.js" defer></script>
 </head>
+
 <body>
-    
+
     <div id="app">
         {{ message }}
-        <ul>
-            <li v-for="item in NonEmptyPrices">
-                <h2>{{item.title}}</h2>
-                <img :src="item.boxshotsmall">
-                <p>{{item.description}}</p>
-                <p><s>{{item.msrp}}</s> {{item.lprice}}</p>
-            </li>
-        </ul>
+        <div class="container">
+            <div class="total">
+                Items: {{current}} / {{total}}
+            </div>
+            <select name="" id="" v-model="selectedType">
+                <option value="" disabled selected>Select Type</option>
+                <option value="All">All</option>
+                <option value="Game">Game</option>
+                <option value="Durables">Durable</option>
+            </select>
+            <pre>{{selectedType}}</pre>
+            <ul>
+                <li v-for="item in filterList">
+                    <div class="item-container">
+                        <div class="img">
+                            <img :src="item.boxshotsmall">
+                        </div>
+                        <div class="more">
+                            <div class="title">
+                                <h2>{{item.title}}</h2>
+                            </div>
+                            <div class="desc">
+                                {{item.description}}
+                            </div>
+                        </div>
+                        <div class="price">
+                            <div class="1st">
+                                <s>{{item.msrp}}</s> {{item.lprice}}
+                            </div>
+                            <div class="2nd">
+                                <s>{{item.msrp}}</s> {{item.lprice}}
+                            </div>
+                        </div>
+                        <div class="buttons">
+                            <button>MS_STORE</button>
+                            <button>Подробнее</button>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
 
     </div>
 
 </body>
+
 </html>

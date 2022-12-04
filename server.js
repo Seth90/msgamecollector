@@ -27,7 +27,7 @@ app.get('/games', (req, res) => {
 })
 app.get('/prices', (req, res) => {
     console.log(req.url);
-    setTimeout(() => {
+    //setTimeout(() => {
         if (fs.existsSync('./gamesDataPrices.json')) {
             let data = fs.readFileSync('./gamesDataPrices.json', (err) => {
                 err ? console.log(err) : null
@@ -45,7 +45,7 @@ app.get('/prices', (req, res) => {
             res.send('Not extsts');
             console.log('Not exist')
         }
-    }, 5000);
+    //}, 5000);
 })
 
 app.listen(PORT, () => {
