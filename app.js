@@ -4,9 +4,11 @@ const App = {
             message: "Hello world",
             jsonData: [],
             selectedType: null,
+            searchText: '',
             arr: [],
             total: 0,
-            current: 0
+            current: 0,
+            isHidden: true
         }
     },
     mounted() {
@@ -46,13 +48,30 @@ const App = {
                     console.log('Preparing data');
                     Object.entries(data).forEach((entry) => {
                         const [key, value] = entry;
-
+                        //!!!!! Присваивание осуществляется для каждого, кто соответствует минимальному !!!!//
+                        var min = 1000000;
+                        var m_t, l_t, c_t, cnt_t = 0;
                         value.forEach((e, i) => {
+                            //console.log("-----");
+                            if (e.lprice < min) {
+                                //console.log(key, e.lprice, e.currency, e.country);
+                                m_t = e.msrp;
+                                l_t = e.lprice;
+                                c_t = e.currency;
+                                cnt_t = e.country;
+                                min = e.lprice;
+                            }
                             if (e.country == 'RU') {
-                                this.jsonData[key].msrp = e.msrp;
-                                this.jsonData[key].lprice = e.lprice;
+                                this.jsonData[key].msrp_origin = e.msrp;
+                                this.jsonData[key].lprice_origin = e.lprice;
+                                this.jsonData[key].currency_origin = e.currency;
+                                this.jsonData[key].country_origin = e.country;
                             }
                         })
+                        this.jsonData[key].msrp_target = m_t;
+                        this.jsonData[key].lprice_target = l_t;
+                        this.jsonData[key].currency_target = c_t;
+                        this.jsonData[key].country_target = cnt_t;
                     });
                 });
 
@@ -84,17 +103,32 @@ const App = {
     },
     computed: {
         filterList() {
+            var tmpArr = [];
             console.log('filterlist');
             if (this.selectedType && this.selectedType !== "All") {
-                let tmpArr = this.arr.filter(e => e.type === this.selectedType);
-                this.current = tmpArr.length;
-                return tmpArr;
+                tmpArr = this.arr.filter(e => e.type === this.selectedType);
+                //this.current = tmpArr.length;
             }
             else {
-                this.current = this.arr.length;
-                return this.arr;
+                tmpArr = this.arr;
             }
-        }
+
+            tmpArr = tmpArr.filter(e =>
+                e.title.toLowerCase().includes(this.searchText.toLowerCase()));
+
+            this.isHidden = tmpArr.length ? true : false;
+            this.current = tmpArr.length;
+            return tmpArr;
+        },
+        // searchHandler() {
+        //     if (this.searchText !== '') {
+        //         this.tmpArr.filter((e, i) => {
+        //             e.title.includes(this.searchText);
+        //         })
+        //     }
+        //     return this.tmpArr;
     }
+
 }
+
 Vue.createApp(App).mount('#app');

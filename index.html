@@ -26,9 +26,10 @@
                 <option value="" disabled selected>Select Type</option>
                 <option value="All">All</option>
                 <option value="Game">Game</option>
-                <option value="Durables">Durable</option>
+                <option value="Durable">Durable</option>
             </select>
-            <pre>{{selectedType}}</pre>
+            <input type="text" v-model="searchText" placeholder="LEGO">
+            <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div>
             <ul>
                 <li v-for="item in filterList">
                     <div class="item-container">
@@ -45,10 +46,12 @@
                         </div>
                         <div class="price">
                             <div class="1st">
-                                <s>{{item.msrp}}</s> {{item.lprice}}
+                                {{item.country_origin}}
+                                <s>{{item.msrp_origin}}</s> {{item.lprice_origin}} {{item.currency_origin}}
                             </div>
                             <div class="2nd">
-                                <s>{{item.msrp}}</s> {{item.lprice}}
+                                {{item.country_target}}
+                                <s>{{item.msrp_target}}</s> {{item.lprice_target}} {{item.currency_target}}
                             </div>
                         </div>
                         <div class="buttons">

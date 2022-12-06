@@ -12,8 +12,44 @@ const urlRegionArray = urlRegionArrayFull.filter((e, i, a) => a.indexOf(e) === i
 var country_promise = [];
 var allGames = {};
 var allGamesPrices = {};
+var currencyDict = {};
+
+var currencyChUrl = 'https://www.cbr-xml-daily.ru/daily_json.js';
 
 async function GetAllData() {
+
+    // await fetch(currencyChUrl)
+    //         .then(res => res.json())
+    //         .then(json => {
+    //             currencyDict = json.Valute;
+    //             fs.writeFile(`./currency.json`, JSON.stringify(json), (error) => {
+    //                 error ? console.log(error) : null;
+    //             });
+    //         })
+    // console.log('Get currency_data - ok');
+
+    var myHeaders = new Headers();
+    myHeaders.append("apikey", "CEAsqALWnEqO9mUFw6YQGd4SFfFmEFsA");
+
+    var requestOptions = {
+        method: 'GET',
+        redirect: 'follow',
+        headers: myHeaders
+    };
+
+    await fetch("https://api.apilayer.com/currency_data/change?source=RUB&start_date=2022-12-06&end_date=2022-12-06", requestOptions)
+        .then(response => response.json())
+        .then(result => {
+            currencyDict = result.quotes;
+            console.log('Get currency_data - ok');
+            fs.writeFile(`./currency.json`, JSON.stringify(result), (error) => {
+                error ? console.log(error) : null;
+            });
+        })
+        .catch(error => console.log('error', error));
+
+
+
     for (let i = 0; i < urlRegionArray.length; i++) {
         console.log(`Progress: ${i + 1} / ${urlRegionArray.length}`);
         const urlRegion = urlRegionArray[i];
@@ -333,6 +369,19 @@ function ParseData(jsonData, countryCode) {
         var tmp_market = [];
         var tmp_dict = {};
 
+
+        // if (currencyDict[currencycode]) {
+        //     msrpprice = Math.round(msrpprice * (currencyDict[currencycode].Value / currencyDict[currencycode].Nominal) * 100) / 100;
+        //     listprice = Math.round(listprice * (currencyDict[currencycode].Value / currencyDict[currencycode].Nominal) * 100) / 100;
+        //     currencycode = 'RUB';
+        // }
+        let changename = "RUB" + currencycode.toUpperCase();
+        if (currencyDict[changename]) {
+            msrpprice = Math.round((msrpprice / currencyDict[changename].start_rate) * 100) / 100;
+            listprice = Math.round((listprice / currencyDict[changename].start_rate) * 100) / 100;
+            currencycode = 'RUB';
+        }
+
         if (typeof allGamesPrices[e.ProductId] === 'undefined') {
             tmp_dict = {
                 country: countryCode,
@@ -356,6 +405,8 @@ function ParseData(jsonData, countryCode) {
 
         allGamesPrices[e.ProductId] = tmp_market;
 
+
+
         allGames[e.ProductId] = {
             type: type,
             multiplayer: multiplayer,
@@ -365,9 +416,14 @@ function ParseData(jsonData, countryCode) {
             boxshot: itemBoxshot,
             boxshotsmall: itemBoxshotSmall,
             //market: tmp_market,
-            msrp: '',
-            lprice: '',
-            country: countryCode,
+            msrp_target: '',
+            lprice_target: '',
+            country_target: '',
+            currency_target: '',
+            msrp_origin: '',
+            lprice_origin: '',
+            country_origin: '',
+            currency_origin: '',
             onsale: onsale,
             eaaccessgame: eaaccessgame,
             gamepassgame: gamepassgame,
