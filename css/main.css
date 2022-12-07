@@ -3,38 +3,62 @@ ul {
   list-style-type: none;
 }
 
+select:required:invalid {
+  color: gray;
+}
+
+option[value=""][disabled] {
+  display: none;
+}
+
+option {
+  color: black;
+}
+
 .container {
   margin: 10px auto;
   font-family: "Raleway", sans-serif;
+  width: 1000px;
 }
 
 .item-container {
   display: flex;
   justify-content: space-around;
   align-items: center;
+  border: 1px solid red;
   margin: 15px 0;
   background: #e4f2fb;
+  max-height: 120px;
 }
 
 .more {
   display: flex;
   flex-direction: column;
   align-items: left;
-  margin-left: 20px;
+  margin-left: 0px;
   width: 50%;
-  height: 210px;
+  height: 120px;
+}
+.more .title {
+  font-size: 20px;
+  font-weight: bold;
 }
 
-.img {
-  max-width: 140px;
+.poster {
+  width: 140px;
   margin-left: 0;
   float: right;
+}
+.poster img {
+  display: block;
+  width: 80px;
+  height: 120px;
 }
 
 .desc {
   overflow: auto;
   font-weight: normal;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 h2 {
@@ -51,6 +75,36 @@ h2 {
 
 button {
   width: 100px;
+  margin-bottom: 5px;
+}
+
+.country_price {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.item_flag {
+  width: 30px;
+  height: 20px;
+}
+
+.searchInput {
+  margin-left: 10px;
+  width: 400px;
+}
+
+.typeSelect {
+  width: 150px;
+}
+
+.bold_price {
+  font-weight: bold;
+}
+
+* {
+  margin: 0;
+  padding: 0;
 }
 
 .hidden {

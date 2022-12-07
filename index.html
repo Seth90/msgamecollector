@@ -22,36 +22,56 @@
             <div class="total">
                 Items: {{current}} / {{total}}
             </div>
-            <select name="" id="" v-model="selectedType">
+            <select reqired name="" class="typeSelect" id="" v-model="selectedType">
                 <option value="" disabled selected>Select Type</option>
                 <option value="All">All</option>
                 <option value="Game">Game</option>
                 <option value="Durable">Durable</option>
             </select>
-            <input type="text" v-model="searchText" placeholder="LEGO">
+            <input type="text" class="searchInput" v-model="searchText" placeholder="LEGO">
             <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div>
-            <ul>
-                <li v-for="item in filterList">
+            <div>
+                <template v-for="item in filterList">
                     <div class="item-container">
-                        <div class="img">
+                        <div class="poster">
                             <img :src="item.boxshotsmall">
                         </div>
                         <div class="more">
                             <div class="title">
-                                <h2>{{item.title}}</h2>
+                                {{item.title}}
                             </div>
                             <div class="desc">
                                 {{item.description}}
                             </div>
                         </div>
                         <div class="price">
-                            <div class="1st">
-                                {{item.country_origin}}
-                                <s>{{item.msrp_origin}}</s> {{item.lprice_origin}} {{item.currency_origin}}
+                            <div class="country_price origin">
+                                <div>
+                                    {{item.country_origin}}
+                                </div>
+                                <div>
+                                    <img class="item_flag" :src="flags[item.country_origin]">
+                                </div>
+                                <div>
+                                    <s>{{item.msrp_origin}} {{item.currency_origin}}</s>
+                                </div>
+                                <div class="bold_price">
+                                    {{item.lprice_origin}} {{item.currency_origin}}
+                                </div>
                             </div>
-                            <div class="2nd">
-                                {{item.country_target}}
-                                <s>{{item.msrp_target}}</s> {{item.lprice_target}} {{item.currency_target}}
+                            <div class="country_price target">
+                                <div>
+                                    {{item.country_target}}
+                                </div>
+                                <div>
+                                    <img class="item_flag" :src="flags[item.country_target]">
+                                </div>
+                                <div>
+                                    <s>{{item.msrp_target}} {{item.currency_target}}</s>
+                                </div>
+                                <div class="bold_price">
+                                    {{item.lprice_target}} {{item.currency_target}}
+                                </div>
                             </div>
                         </div>
                         <div class="buttons">
@@ -59,8 +79,8 @@
                             <button>Подробнее</button>
                         </div>
                     </div>
-                </li>
-            </ul>
+                </template>
+            </div>
         </div>
 
     </div>

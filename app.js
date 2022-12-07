@@ -8,7 +8,33 @@ const App = {
             arr: [],
             total: 0,
             current: 0,
-            isHidden: true
+            isHidden: true,
+            country_flag_origin: '',
+            country_flag_target: '',
+            flags: {
+                "RU": "./imgs/flags/ru.png",
+                "AR": "./imgs/flags/ar.png",
+                "TR": "./imgs/flags/tr.png",
+                "MX": "./imgs/flags/mx.webp",
+                "IN": "./imgs/flags/in.webp",
+                "JP": "./imgs/flags/jp.webp",
+                "BR": "./imgs/flags/br.webp",
+                "KR": "./imgs/flags/kr.png",
+                "IT": "./imgs/flags/it.webp",
+                "CA": "./imgs/flags/ca.webp",
+                "HU": "./imgs/flags/hu.webp",
+                "ZA": "./imgs/flags/za.webp",
+                "US": "./imgs/flags/us.webp",
+                "GB": "./imgs/flags/gb.webp",
+                "CO": "./imgs/flags/co.png",
+                "AU": "./imgs/flags/au.png",
+                "SE": "./imgs/flags/se.webp",
+                "DE": "./imgs/flags/de.webp",
+                "NZ": "./imgs/flags/nz.webp",
+                "FR": "./imgs/flags/fr.webp",
+                "TW": "./imgs/flags/tw.webp",
+                "NO": "./imgs/flags/no.webp"
+            }
         }
     },
     mounted() {
@@ -120,13 +146,6 @@ const App = {
             this.current = tmpArr.length;
             return tmpArr;
         },
-        // searchHandler() {
-        //     if (this.searchText !== '') {
-        //         this.tmpArr.filter((e, i) => {
-        //             e.title.includes(this.searchText);
-        //         })
-        //     }
-        //     return this.tmpArr;
     }
 
 }
