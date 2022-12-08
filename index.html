@@ -10,26 +10,38 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
     <script src="app.js" defer></script>
 </head>
 
 <body>
 
     <div id="app">
-        {{ message }}
+        <!-- {{ message }} -->
         <div class="container">
             <div class="total">
-                Items: {{current}} / {{total}}
+                Показано: {{current}} / {{total}}
             </div>
-            <select reqired name="" class="typeSelect" id="" v-model="selectedType">
-                <option value="" disabled selected>Select Type</option>
-                <option value="All">All</option>
-                <option value="Game">Game</option>
-                <option value="Durable">Durable</option>
-            </select>
-            <input type="text" class="searchInput" v-model="searchText" placeholder="LEGO">
-            <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div>
+            <div class="serach_container">
+                <div class="search_input">
+                    <select reqired name="" class="typeSelect" id="" v-model="selectedType">
+                        <option value="" disabled selected>Select Type</option>
+                        <option value="All">All</option>
+                        <option value="Game">Game</option>
+                        <option value="Durable">Durable</option>
+                    </select>
+                    <input type="text" class="searchInput" v-model="searchText" placeholder="LEGO">
+                    <img class="search_img" src="imgs/search.svg" alt="" width="15" height="15">
+                </div>
+                <!-- <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div> -->
+                <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div>
+            </div>
+
+            <div class="preloader" v-if="arr.length === 0">
+                <h4>Идет загрузка данных..</h4>
+                <img src="imgs/loading.gif" alt="Loading" />
+            </div>
+
             <div>
                 <template v-for="item in filterList">
                     <div class="item-container">
@@ -40,8 +52,9 @@
                             <div class="title">
                                 {{item.title}}
                             </div>
+                            <!-- <button @mouseover="onHover">Description</button> -->
                             <div class="desc">
-                                {{item.description}}
+                                <p>{{item.description}}</p>
                             </div>
                         </div>
                         <div class="price">
@@ -75,8 +88,8 @@
                             </div>
                         </div>
                         <div class="buttons">
-                            <button>MS_STORE</button>
-                            <button>Подробнее</button>
+                            <a target="_blank" v-bind:href="item.url">xbox.com</a>
+                            <!-- <button>Подробнее</button> -->
                         </div>
                     </div>
                 </template>

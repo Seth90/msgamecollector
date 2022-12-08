@@ -1,11 +1,7 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
-const { resolve } = require('path');
-const { Console } = require('console');
 
 var urlRegionArrayFull = ["ru-ru", "ru-us", "ru-ar", "ru-ae", "ru-sa", "ru-cz", "ru-dk", "ru-at", "ru-ch", "ru-de", "ru-gr", "ru-ae", "ru-gb", "ru-ie", "ru-za", "ru-co", "ru-es", "ru-fi", "ru-be", "ru-ch", "ru-fr", "ru-il", "ru-hu", "ru-it", "ru-no", "ru-be", "ru-nl", "ru-pl", "ru-pt", "ru-sk", "ru-se", "ru-tr", "ru-au", "ru-ca", "ru-hk", "ru-in", "ru-nz", "ru-sg", "ru-cl", "ru-mx", "ru-jp", "ru-kr", "ru-br", /*"ru-cn",*/ "ru-tw"];
-
-//urlRegionArrayFull = ["ru-in"];
 
 const urlRegionArray = urlRegionArrayFull.filter((e, i, a) => a.indexOf(e) === i);
 
@@ -17,17 +13,6 @@ var currencyDict = {};
 var currencyChUrl = 'https://www.cbr-xml-daily.ru/daily_json.js';
 
 async function GetAllData() {
-
-    // await fetch(currencyChUrl)
-    //         .then(res => res.json())
-    //         .then(json => {
-    //             currencyDict = json.Valute;
-    //             fs.writeFile(`./currency.json`, JSON.stringify(json), (error) => {
-    //                 error ? console.log(error) : null;
-    //             });
-    //         })
-    // console.log('Get currency_data - ok');
-
     var myHeaders = new Headers();
     myHeaders.append("apikey", "CEAsqALWnEqO9mUFw6YQGd4SFfFmEFsA");
 
@@ -47,8 +32,6 @@ async function GetAllData() {
             });
         })
         .catch(error => console.log('error', error));
-
-
 
     for (let i = 0; i < urlRegionArray.length; i++) {
         console.log(`Progress: ${i + 1} / ${urlRegionArray.length}`);
@@ -89,8 +72,6 @@ async function GetDataFromCountry(urlRegion) {
     var prom_arr = [];
     var index = 0;
     do {
-        //const res = await fetch(url + skip);
-        //console.log(recoUrl + skip);
         prom_arr[index++] = new Promise((resolve, reject) => {
             fetch(recoUrl + skip).then((res) => res.json()).then((json) => resolve(json)).catch((err) => console.log(err));
         });
@@ -101,7 +82,6 @@ async function GetDataFromCountry(urlRegion) {
         data.forEach((e, i) => {
             e.Items.forEach(el => {
                 array_ids.push(el.Id);
-                //console.log(el.Id);
             })
         })
     })
@@ -109,19 +89,15 @@ async function GetDataFromCountry(urlRegion) {
     var gamesUrl = 'https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=GAMEIDS&market=' + countryCode + '&languages=' + regionLang + '&MS-CV=DGU1mcuYo0WMMp+F.1';
     let chunk = 0;
     for (let i = 0; i < Math.ceil(r.length / 10); i++) {
-        //console.log(`Chunk: ${chunk} / ${r.length}`);
         let tmpArr = r.slice(chunk, chunk + 10);
         chunk += 10;
         let tmpGameUrl = gamesUrl.replace('GAMEIDS', tmpArr.join(','));
-        //console.log(`GAMES ULR: ${tmpGameUrl}`);
-
         gamePromiseArray[i] = new Promise((resolve, reject) =>
             fetch(tmpGameUrl)
                 .then(res => res.json())
                 .then(json => resolve(json)))
             .catch((err) => { console.log(err); reject() });
     }
-
     await Promise.all(gamePromiseArray).then(data => {
         data.forEach((e) => {
             ParseData(e, countryCode);
@@ -405,9 +381,11 @@ function ParseData(jsonData, countryCode) {
 
         allGamesPrices[e.ProductId] = tmp_market;
 
-
+        let s = title.replace(/[^a-zа-яё0-9\s]/gi, '').replace(/\s+/g, ' ').toLowerCase().split(' ').join('-');
+        let gameUrl = `https://www.xbox.com/en-us/games/store/${s}/${e.ProductId}`;
 
         allGames[e.ProductId] = {
+            url: gameUrl,
             type: type,
             multiplayer: multiplayer,
             coop: coop,

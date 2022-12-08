@@ -1,0 +1,73 @@
+@mixin truncate($rows, $line-height, $background: '') {
+    position: relative;
+    overflow: hidden;
+    max-height: $line-height * $rows;
+    line-height: $line-height;
+  
+    &:after {
+      content: "";
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 100px;
+      height: $line-height;
+  
+      @if $background != '' {
+        background: linear-gradient(to right, rgba($background, 0) 0%, rgba($background, 1) 100%);
+      }
+    }
+  
+    // If supports line-clamp then add an ellipsis overflow and hide the gradient
+    // This will work in Chrome and Opera, otherwise a gradient will gradually hide the text.
+  
+    @supports (-webkit-line-clamp: $rows) {
+      display: -webkit-box;
+      -webkit-line-clamp: $rows;
+      -webkit-box-orient: vertical;
+  
+      &:after {
+        display: none;
+      }
+    }
+  }
+  
+  .show-hide-text {
+    display: flex;
+    flex-wrap: wrap;
+  
+    a {
+      order: 2;
+    }
+  
+    p {
+      @include truncate(2, 20px, #fff); // rows, line-height, gradient fallback
+    }
+  }
+  
+  .show-less {
+    display: none;
+  
+    &:target {
+      display: block;
+  
+      ~ p {
+        display: block;
+        max-height: 100%;
+      }
+  
+      + a {
+        display: none;
+      }
+    }
+  }
+    // Presentation styles
+  
+  .wrapper {
+    max-width: 300px;
+    margin: 50px auto;
+    
+    p {
+      font-size: 16px;
+      line-height: 20px;
+    }
+  }

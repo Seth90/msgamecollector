@@ -1,3 +1,4 @@
+//import { ref, onMounted } from 'vue';
 const App = {
     data() {
         return {
@@ -34,26 +35,29 @@ const App = {
                 "FR": "./imgs/flags/fr.webp",
                 "TW": "./imgs/flags/tw.webp",
                 "NO": "./imgs/flags/no.webp"
-            }
+            },
+            show: false,
+            clientX: 0,
+            clientY: 0,
+            wasLoaded: false
         }
     },
     mounted() {
         //var url = "http://127.0.0.1:3000/ya_data";
-        console.log("start fetching..");
+        //console.log("start fetching..");
         this.GetGeneralGameData().then((data) => {
             this.jsonData = data;
             Object.entries(this.jsonData).forEach((entry) => {
                 const [key, value] = entry;
-                //if (value.type === 'Durable') {
                 this.arr.push(value);
-                //}
             });
             this.arr.sort((prev, next) => (prev.title > next.title) - (prev.title < next.title));
             this.total = this.arr.length;
+            this.wasLoaded = true;
             //console.log(this.jsonData);
         });
-        console.log('fetching - OK');
-        console.log('getting prices...');
+        //console.log('fetching - OK');
+        //console.log('getting prices...');
 
 
     },
@@ -64,14 +68,14 @@ const App = {
                 headers: {}
             };
             var json = {};
-            console.log('......')
+           // console.log('......')
             const response = await fetch('http://127.0.0.1:3000/games', options);
             if (response.ok) {
                 json = await response.json();
                 //console.log(json);
                 this.GetPriceGameData().then((data) => {
 
-                    console.log('Preparing data');
+                    //console.log('Preparing data');
                     Object.entries(data).forEach((entry) => {
                         const [key, value] = entry;
                         //!!!!! Присваивание осуществляется для каждого, кто соответствует минимальному !!!!//
@@ -103,7 +107,7 @@ const App = {
 
             }
             else {
-                console.log('Response not OK');
+                //console.log('Response not OK');
             }
 
             //this.filterList();
@@ -115,22 +119,28 @@ const App = {
                 headers: {}
             };
             var json = {};
-            console.log('......')
+            //console.log('......')
             const response = await fetch('http://127.0.0.1:3000/prices', options);
             if (response.ok) {
                 json = await response.json();
                 //console.log(json);
             }
             else {
-                console.log('Response not OK');
+                //console.log('Response not OK');
             }
             return json;
-        }
+        },
+        onHover(e) {
+            const { clientX, clientY } = e;
+            this.show = true;
+            this.clientX = clientX;
+            this.clientY = clientY;
+        },
     },
     computed: {
         filterList() {
             var tmpArr = [];
-            console.log('filterlist');
+            //console.log('filterlist');
             if (this.selectedType && this.selectedType !== "All") {
                 tmpArr = this.arr.filter(e => e.type === this.selectedType);
                 //this.current = tmpArr.length;
@@ -142,7 +152,18 @@ const App = {
             tmpArr = tmpArr.filter(e =>
                 e.title.toLowerCase().includes(this.searchText.toLowerCase()));
 
-            this.isHidden = tmpArr.length ? true : false;
+            if (this.wasLoaded) {
+                if (tmpArr.length === 0) {
+                    this.isHidden = false;
+                }
+                else {
+                    this.isHidden = true;
+                }
+            }
+            else {
+                this.isHidden = true;
+            }
+            // this.isHidden = (tmpArr.length && this.wasLoaded) ? true : false;
             this.current = tmpArr.length;
             return tmpArr;
         },
