@@ -1,53 +1,43 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
 
-var urlRegionArrayFull = ["ru-ru", "ru-us", "ru-ar", "ru-ae", "ru-sa", "ru-cz", "ru-dk", "ru-at", "ru-ch", "ru-de", "ru-gr", "ru-ae", "ru-gb", "ru-ie", "ru-za", "ru-co", "ru-es", "ru-fi", "ru-be", "ru-ch", "ru-fr", "ru-il", "ru-hu", "ru-it", "ru-no", "ru-be", "ru-nl", "ru-pl", "ru-pt", "ru-sk", "ru-se", "ru-tr", "ru-au", "ru-ca", "ru-hk", "ru-in", "ru-nz", "ru-sg", "ru-cl", "ru-mx", "ru-jp", "ru-kr", "ru-br", /*"ru-cn",*/ "ru-tw"];
+var urlRegionArrayFull = ["AR-AE", "AR-SA", "CS-CZ", "DA-DK", "DE-AT", "DE-CH", "DE-DE", "EL-GR", "EN-AE", "EN-GB", "EN-IE", "EN-ZA", "ES-CO", "ES-ES", "FI-FI", "FR-BE", "FR-CH", "FR-FR", "HE-IL", "HU-HU", "IT-IT", "NB-NO", "NL-BE", "NL-NL", "PL-PL", "PT-PT", "RU-RU", "SK-SK", "SV-SE", "TR-TR", "EN-AU", "EN-CA", "EN-HK", "EN-IN", "EN-NZ", "EN-SG", "EN-US", "ES-AR", "ES-CL", "ES-CO", "ES-MX", "JA-JP", "KO-KR", "PT-BR", /*"ZH-CN",*/ "ZH-HK", "ZH-TW"];
 
 const urlRegionArray = urlRegionArrayFull.filter((e, i, a) => a.indexOf(e) === i);
 
 var country_promise = [];
 var allGames = {};
 var allGamesPrices = {};
+var allGamesPosters = {};
+var allGamesDescriptions = {};
 var currencyDict = {};
+var langPresentArray = [];
 
 var currencyChUrl = 'https://www.cbr-xml-daily.ru/daily_json.js';
+console.time('CollectAllData');
+GetAllData().then(() => {
+    //WriteData();
+    console.log("FINISHED");
+    console.timeEnd('CollectAllData');
+});
 
 async function GetAllData() {
-    var myHeaders = new Headers();
-    myHeaders.append("apikey", "CEAsqALWnEqO9mUFw6YQGd4SFfFmEFsA");
-
-    var requestOptions = {
-        method: 'GET',
-        redirect: 'follow',
-        headers: myHeaders
-    };
-
-    await fetch("https://api.apilayer.com/currency_data/change?source=RUB&start_date=2022-12-06&end_date=2022-12-06", requestOptions)
-        .then(response => response.json())
-        .then(result => {
-            currencyDict = result.quotes;
-            console.log('Get currency_data - ok');
-            fs.writeFile(`./currency.json`, JSON.stringify(result), (error) => {
-                error ? console.log(error) : null;
-            });
-        })
-        .catch(error => console.log('error', error));
+    await GetChangeData();
 
     for (let i = 0; i < urlRegionArray.length; i++) {
+        //allGamesDescriptions = {};
+
         console.log(`Progress: ${i + 1} / ${urlRegionArray.length}`);
         const urlRegion = urlRegionArray[i];
         console.log(urlRegion.toUpperCase());
-        const countryCode = urlRegion.split("-")[1].toUpperCase();
+        const languageCode = urlRegion.split("-")[0].toUpperCase();
+        //const countryCode = urlRegion.split("-")[1].toUpperCase();
         console.time('CollectingItems');
         await GetDataFromCountry(urlRegion);
         console.timeEnd('CollectingItems');
         console.log('--------------');
-        fs.writeFile(`./gamesDataRU.json`, JSON.stringify(allGames), (error) => {
-            error ? console.log(error) : null;
-        });
-        fs.writeFile(`./gamesDataPrices.json`, JSON.stringify(allGamesPrices), (error) => {
-            error ? console.log(error) : null;
-        });
+
+        WriteData(languageCode);
     }
 }
 async function GetDataFromCountry(urlRegion) {
@@ -100,12 +90,40 @@ async function GetDataFromCountry(urlRegion) {
     }
     await Promise.all(gamePromiseArray).then(data => {
         data.forEach((e) => {
-            ParseData(e, countryCode);
+            ParseData(e, urlRegion);
         })
     })
 }
+async function GetChangeData() {
+    let data = fs.readFileSync('./data/currency_DO-NOT-DELETE.json', (err) => {
+         err ? console.log(err) : null
+     });
+     currencyDict = JSON.parse(data);
 
-function ParseData(jsonData, countryCode) {
+    // var myHeaders = new Headers();
+    // myHeaders.append("apikey", "CEAsqALWnEqO9mUFw6YQGd4SFfFmEFsA");
+
+    // var requestOptions = {
+    //     method: 'GET',
+    //     redirect: 'follow',
+    //     headers: myHeaders
+    // };
+
+    // await fetch("https://api.apilayer.com/currency_data/change?source=USD&start_date=2022-12-06&end_date=2022-12-06", requestOptions)
+    //     .then(response => response.json())
+    //     .then(result => {
+    //         currencyDict = result.quotes;
+    //         console.log('Get currency_data - ok');
+    //         fs.writeFile(`./data/currency.json`, JSON.stringify(result), (error) => {
+    //             error ? console.log(error) : null;
+    //         });
+    //     })
+    //     .catch(error => console.log('error', error));
+}
+function ParseData(jsonData, urlRegion) {
+    const languageCode = urlRegion.split("-")[0].toUpperCase();
+    const countryCode = urlRegion.split("-")[1].toUpperCase();
+
     jsonData.Products.forEach((e, i) => {
         var phys = "false";
         var title = e.LocalizedProperties[0].ProductTitle;
@@ -344,6 +362,8 @@ function ParseData(jsonData, countryCode) {
         }
         var tmp_market = [];
         var tmp_dict = {};
+        var tmp_desc = [];
+        var tmp_lang_dict = {};
 
 
         // if (currencyDict[currencycode]) {
@@ -377,9 +397,36 @@ function ParseData(jsonData, countryCode) {
             tmp_market = allGamesPrices[e.ProductId];
             tmp_market.push(tmp_dict);
         }
-        // END MARKETS
-
         allGamesPrices[e.ProductId] = tmp_market;
+
+
+        let isLangPresent = false;
+        if (typeof allGamesDescriptions[e.ProductId] === 'undefined') {
+            tmp_desc = [];
+        }
+        else {
+            tmp_desc = allGamesDescriptions[e.ProductId];
+        }
+
+        tmp_desc.forEach((e) => {
+            if (e.lang == languageCode) {
+                isLangPresent = true;
+            }
+        })
+
+        if (!isLangPresent) {
+            tmp_desc.push({
+                title: title,
+                lang: languageCode,
+                shortdesc: shortdesc
+            });
+            allGamesDescriptions[e.ProductId] = tmp_desc;
+        }
+        
+        // END MARKETS
+        //tmpLangDict[languageCode] = shortdesc;
+
+        allGamesPosters[e.ProductId] = itemBoxshotSmall;
 
         let s = title.replace(/[^a-zа-яё0-9\s]/gi, '').replace(/\s+/g, ' ').toLowerCase().split(' ').join('-');
         let gameUrl = `https://www.xbox.com/en-us/games/store/${s}/${e.ProductId}`;
@@ -390,18 +437,18 @@ function ParseData(jsonData, countryCode) {
             multiplayer: multiplayer,
             coop: coop,
             title: title,
-            description: shortdesc,
+            //description: shortdesc,
             boxshot: itemBoxshot,
-            boxshotsmall: itemBoxshotSmall,
+            //boxshotsmall: itemBoxshotSmall,
             //market: tmp_market,
-            msrp_target: '',
-            lprice_target: '',
-            country_target: '',
-            currency_target: '',
-            msrp_origin: '',
-            lprice_origin: '',
-            country_origin: '',
-            currency_origin: '',
+            // msrp_target: '',
+            // lprice_target: '',
+            // country_target: '',
+            // currency_target: '',
+            // msrp_origin: '',
+            // lprice_origin: '',
+            // country_origin: '',
+            // currency_origin: '',
             onsale: onsale,
             eaaccessgame: eaaccessgame,
             gamepassgame: gamepassgame,
@@ -416,22 +463,17 @@ function ParseData(jsonData, countryCode) {
         };
     })
 }
-GetAllData().then(() => {
-    fs.writeFile(`./gamesDataRU.json`, JSON.stringify(allGames), (error) => {
+function WriteData(country) {
+    fs.writeFile(`./data/gamesDataRU.json`, JSON.stringify(allGames), (error) => {
         error ? console.log(error) : null;
     });
-    fs.writeFile(`./gamesDataPrices.json`, JSON.stringify(allGamesPrices), (error) => {
+    fs.writeFile(`./data/gamesDataPrices.json`, JSON.stringify(allGamesPrices), (error) => {
         error ? console.log(error) : null;
     });
-});
-
-
-
-
-
-
-
-
-
-//console.log(prom_arr);
-
+    fs.writeFile(`./data/gamesDataDescriptions.json`, JSON.stringify(allGamesDescriptions), (error) => {
+        error ? console.log(error) : null;
+    });
+    fs.writeFile(`./data/gamesDataPosters.json`, JSON.stringify(allGamesPosters), (error) => {
+        error ? console.log(error) : null;
+    });
+}

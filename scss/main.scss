@@ -11,6 +11,10 @@
 .total {
     margin-bottom: 10px;
 }
+.search_container {
+    display: flex;
+    justify-content: left;
+}
 .search_img {
     width: 15px;
     height: 15px;
@@ -30,4 +34,7 @@
         width: 200px;
         height: 150px;
     }
+}
+.langSelect {
+    right: 20px;
 }

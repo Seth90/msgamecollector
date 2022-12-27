@@ -39,12 +39,11 @@ const App = {
             show: false,
             clientX: 0,
             clientY: 0,
-            wasLoaded: false
+            wasLoaded: false,
+            language: 'AR'
         }
     },
     mounted() {
-        //var url = "http://127.0.0.1:3000/ya_data";
-        //console.log("start fetching..");
         this.GetGeneralGameData().then((data) => {
             this.jsonData = data;
             Object.entries(this.jsonData).forEach((entry) => {
@@ -56,10 +55,6 @@ const App = {
             this.wasLoaded = true;
             //console.log(this.jsonData);
         });
-        //console.log('fetching - OK');
-        //console.log('getting prices...');
-
-
     },
     methods: {
         async GetGeneralGameData() {
@@ -68,14 +63,12 @@ const App = {
                 headers: {}
             };
             var json = {};
-           // console.log('......')
-            const response = await fetch('http://127.0.0.1:3000/games', options);
+            // console.log('......')
+            const response = await fetch('http://127.0.0.1:3000/getGames', options);
             if (response.ok) {
                 json = await response.json();
                 //console.log(json);
-                this.GetPriceGameData().then((data) => {
-
-                    //console.log('Preparing data');
+                this.GetData(target = 'getPrices').then((data) => {
                     Object.entries(data).forEach((entry) => {
                         const [key, value] = entry;
                         //!!!!! Присваивание осуществляется для каждого, кто соответствует минимальному !!!!//
@@ -104,7 +97,21 @@ const App = {
                         this.jsonData[key].country_target = cnt_t;
                     });
                 });
-
+                this.GetData(target = 'getPosters').then((data) => {
+                    Object.entries(data).forEach((entry) => {
+                        const [key, value] = entry;
+                        this.jsonData[key].boxshotsmall = value;
+                    })
+                });
+                this.GetData(target = 'getDescriptions?lang=' + this.language).then((data) => {
+                    Object.entries(data).forEach((entry) => {
+                        const [key, value] = entry;
+                        this.jsonData[key].title = value.title;
+                        this.jsonData[key].description = value.shortdesc;
+                        console.log(value.shortdesc);
+                        this.jsonData[key].shortDescription = String(value.shortdesc).substring(0, 300) + '...';
+                    })
+                })
             }
             else {
                 //console.log('Response not OK');
@@ -113,14 +120,14 @@ const App = {
             //this.filterList();
             return json;
         },
-        async GetPriceGameData() {
+        async GetData(target) {
             let options = {
                 method: 'GET',
                 headers: {}
             };
             var json = {};
             //console.log('......')
-            const response = await fetch('http://127.0.0.1:3000/prices', options);
+            const response = await fetch(`http://127.0.0.1:3000/${target}`, options);
             if (response.ok) {
                 json = await response.json();
                 //console.log(json);
@@ -136,6 +143,18 @@ const App = {
             this.clientX = clientX;
             this.clientY = clientY;
         },
+        onChange(event) {
+            console.log(event.target.value)
+            this.GetData(target = 'getDescriptions?lang=' + this.language).then((data) => {
+                Object.entries(data).forEach((entry) => {
+                    const [key, value] = entry;
+                    this.jsonData[key].title = value.title;
+                    this.jsonData[key].description = value.shortdesc;
+                    console.log(value.shortdesc);
+                    this.jsonData[key].shortDescription = String(value.shortdesc).substring(0, 300) + '...';
+                })
+            })
+        }
     },
     computed: {
         filterList() {
@@ -168,7 +187,6 @@ const App = {
             return tmpArr;
         },
     }
-
 }
 
 Vue.createApp(App).mount('#app');

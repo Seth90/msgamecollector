@@ -22,7 +22,7 @@
             <div class="total">
                 Показано: {{current}} / {{total}}
             </div>
-            <div class="serach_container">
+            <div class="search_container">
                 <div class="search_input">
                     <select reqired name="" class="typeSelect" id="" v-model="selectedType">
                         <option value="" disabled selected>Select Type</option>
@@ -30,13 +30,21 @@
                         <option value="Game">Game</option>
                         <option value="Durable">Durable</option>
                     </select>
+
                     <input type="text" class="searchInput" v-model="searchText" placeholder="LEGO">
                     <img class="search_img" src="imgs/search.svg" alt="" width="15" height="15">
+
+                    <select reqired name="" @change="onChange($event)" class="langSelect" id="" v-model="language">
+                        <option value="" disabled selected>Select language</option>
+                        <option value="RU">RU</option>
+                        <option value="US">US</option>
+                        <option value="AR">AR</option>
+                    </select>
                 </div>
                 <!-- <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div> -->
-                <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div>
+                
             </div>
-
+            <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div>
             <div class="preloader" v-if="arr.length === 0">
                 <h4>Идет загрузка данных..</h4>
                 <img src="imgs/loading.gif" alt="Loading" />
@@ -54,24 +62,10 @@
                             </div>
                             <!-- <button @mouseover="onHover">Description</button> -->
                             <div class="desc">
-                                <p>{{item.description}}</p>
+                                <p>{{item.shortDescription}}</p>
                             </div>
                         </div>
                         <div class="price">
-                            <div class="country_price origin">
-                                <div>
-                                    {{item.country_origin}}
-                                </div>
-                                <div>
-                                    <img class="item_flag" :src="flags[item.country_origin]">
-                                </div>
-                                <div>
-                                    <s>{{item.msrp_origin}} {{item.currency_origin}}</s>
-                                </div>
-                                <div class="bold_price">
-                                    {{item.lprice_origin}} {{item.currency_origin}}
-                                </div>
-                            </div>
                             <div class="country_price target">
                                 <div>
                                     {{item.country_target}}
@@ -92,6 +86,7 @@
                             <!-- <button>Подробнее</button> -->
                         </div>
                     </div>
+                    <hr>
                 </template>
             </div>
         </div>
