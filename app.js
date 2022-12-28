@@ -13,28 +13,54 @@ const App = {
             country_flag_origin: '',
             country_flag_target: '',
             flags: {
-                "RU": "./imgs/flags/ru.png",
-                "AR": "./imgs/flags/ar.png",
-                "TR": "./imgs/flags/tr.png",
-                "MX": "./imgs/flags/mx.webp",
-                "IN": "./imgs/flags/in.webp",
-                "JP": "./imgs/flags/jp.webp",
-                "BR": "./imgs/flags/br.webp",
-                "KR": "./imgs/flags/kr.png",
-                "IT": "./imgs/flags/it.webp",
-                "CA": "./imgs/flags/ca.webp",
-                "HU": "./imgs/flags/hu.webp",
-                "ZA": "./imgs/flags/za.webp",
-                "US": "./imgs/flags/us.webp",
-                "GB": "./imgs/flags/gb.webp",
-                "CO": "./imgs/flags/co.png",
-                "AU": "./imgs/flags/au.png",
-                "SE": "./imgs/flags/se.webp",
-                "DE": "./imgs/flags/de.webp",
-                "NZ": "./imgs/flags/nz.webp",
-                "FR": "./imgs/flags/fr.webp",
-                "TW": "./imgs/flags/tw.webp",
-                "NO": "./imgs/flags/no.webp"
+                "U.A.E.": "./imgs/flags/ae.png",
+                "Russia": "./imgs/flags/ru.png",
+                "Argentina": "./imgs/flags/ar.png",
+                "Turkey": "./imgs/flags/tr.png",
+                "Mexico": "./imgs/flags/mx.webp",
+                "India": "./imgs/flags/in.webp",
+                "Japan": "./imgs/flags/jp.webp",
+                "Brazil": "./imgs/flags/br.webp",
+                "Korea": "./imgs/flags/kr.png",
+                "Italy": "./imgs/flags/it.webp",
+                "Canada": "./imgs/flags/ca.webp",
+                "Hungary": "./imgs/flags/hu.webp",
+                "South Africa": "./imgs/flags/za.webp",
+                "United States": "./imgs/flags/us.webp",
+                "United Kingdom": "./imgs/flags/gb.webp",
+                "Colombia": "./imgs/flags/co.png",
+                "Australia": "./imgs/flags/au.png",
+                "Sweden": "./imgs/flags/se.webp",
+                "Germany": "./imgs/flags/de.webp",
+                "New Zealand": "./imgs/flags/nz.webp",
+                "France": "./imgs/flags/fr.webp",
+                "Taiwan": "./imgs/flags/tw.webp",
+                "Norway": "./imgs/flags/no.webp"
+            },
+            сountriesShortToFull: {
+                "RU": "Russia",
+                "AE": "U.A.E.",
+                "AR": "Argentina",
+                "TR": "Turkey",
+                "MX": "Mexico",
+                "IN": "India",
+                "JP": "Japan",
+                "BR": "Brazil",
+                "KR": "Korea",
+                "IT": "Italy",
+                "CA": "Canada",
+                "HU": "Hungary",
+                "ZA": "South Africa",
+                "US": "United States",
+                "GB": "United Kingdom",
+                "CO": "Colombia",
+                "AU": "Australia",
+                "SE": "Sweden",
+                "DE": "Germany",
+                "NZ": "New Zealand",
+                "FR": "France",
+                "TW": "Taiwan",
+                "NO": "Norway"
             },
             show: false,
             clientX: 0,
@@ -84,17 +110,17 @@ const App = {
                                 cnt_t = e.country;
                                 min = e.lprice;
                             }
-                            if (e.country == 'RU') {
-                                this.jsonData[key].msrp_origin = e.msrp;
-                                this.jsonData[key].lprice_origin = e.lprice;
-                                this.jsonData[key].currency_origin = e.currency;
-                                this.jsonData[key].country_origin = e.country;
-                            }
+                            // if (e.country == 'RU') {
+                            //     this.jsonData[key].msrp_origin = e.msrp;
+                            //     this.jsonData[key].lprice_origin = e.lprice;
+                            //     this.jsonData[key].currency_origin = e.currency;
+                            //     this.jsonData[key].country_origin = e.country;
+                            // }
                         })
                         this.jsonData[key].msrp_target = m_t;
                         this.jsonData[key].lprice_target = l_t;
                         this.jsonData[key].currency_target = c_t;
-                        this.jsonData[key].country_target = cnt_t;
+                        this.jsonData[key].country_target = this.сountriesShortToFull[cnt_t];
                     });
                 });
                 this.GetData(target = 'getPosters').then((data) => {
@@ -103,13 +129,13 @@ const App = {
                         this.jsonData[key].boxshotsmall = value;
                     })
                 });
-                this.GetData(target = 'getDescriptions?lang=' + this.language).then((data) => {
+                this.GetData(target = 'getDescriptions').then((data) => {
                     Object.entries(data).forEach((entry) => {
                         const [key, value] = entry;
                         this.jsonData[key].title = value.title;
-                        this.jsonData[key].description = value.shortdesc;
-                        console.log(value.shortdesc);
-                        this.jsonData[key].shortDescription = String(value.shortdesc).substring(0, 300) + '...';
+                        this.jsonData[key].description = value.description;
+                        //console.log(value.shortdesc);
+                        this.jsonData[key].shortDescription = String(value.description).substring(0, 300) + '...';
                     })
                 })
             }
@@ -137,24 +163,24 @@ const App = {
             }
             return json;
         },
-        onHover(e) {
-            const { clientX, clientY } = e;
-            this.show = true;
-            this.clientX = clientX;
-            this.clientY = clientY;
-        },
-        onChange(event) {
-            console.log(event.target.value)
-            this.GetData(target = 'getDescriptions?lang=' + this.language).then((data) => {
-                Object.entries(data).forEach((entry) => {
-                    const [key, value] = entry;
-                    this.jsonData[key].title = value.title;
-                    this.jsonData[key].description = value.shortdesc;
-                    console.log(value.shortdesc);
-                    this.jsonData[key].shortDescription = String(value.shortdesc).substring(0, 300) + '...';
-                })
-            })
-        }
+        // onHover(e) {
+        //     const { clientX, clientY } = e;
+        //     this.show = true;
+        //     this.clientX = clientX;
+        //     this.clientY = clientY;
+        // },
+        // onChange(event) {
+        //     console.log(event.target.value)
+        //     this.GetData(target = 'getDescriptions?lang=' + this.language).then((data) => {
+        //         Object.entries(data).forEach((entry) => {
+        //             const [key, value] = entry;
+        //             this.jsonData[key].title = value.title;
+        //             this.jsonData[key].description = value.shortdesc;
+        //             console.log(value.shortdesc);
+        //             this.jsonData[key].shortDescription = String(value.shortdesc).substring(0, 300) + '...';
+        //         })
+        //     })
+        // }
     },
     computed: {
         filterList() {

@@ -1,7 +1,16 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
+const { title } = require('process');
 
-var urlRegionArrayFull = ["AR-AE", "AR-SA", "CS-CZ", "DA-DK", "DE-AT", "DE-CH", "DE-DE", "EL-GR", "EN-AE", "EN-GB", "EN-IE", "EN-ZA", "ES-CO", "ES-ES", "FI-FI", "FR-BE", "FR-CH", "FR-FR", "HE-IL", "HU-HU", "IT-IT", "NB-NO", "NL-BE", "NL-NL", "PL-PL", "PT-PT", "RU-RU", "SK-SK", "SV-SE", "TR-TR", "EN-AU", "EN-CA", "EN-HK", "EN-IN", "EN-NZ", "EN-SG", "EN-US", "ES-AR", "ES-CL", "ES-CO", "ES-MX", "JA-JP", "KO-KR", "PT-BR", /*"ZH-CN",*/ "ZH-HK", "ZH-TW"];
+let headers = new Headers({
+    "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    "accept-encoding": "gzip, deflate, br",
+    "accept-language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+    "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Mobile Safari/537.36"
+});
+
+var urlRegionArrayFull = ["AR-AE"/*, "AR-SA", "CS-CZ", "DA-DK", "DE-AT", "DE-CH", "DE-DE", "EL-GR", "EN-AE", "EN-GB", "EN-IE", "EN-ZA", "ES-CO", "ES-ES", "FI-FI", "FR-BE", "FR-CH", "FR-FR", "HE-IL", "HU-HU", "IT-IT", "NB-NO", "NL-BE", "NL-NL", "PL-PL", "PT-PT", "RU-RU", "SK-SK", "SV-SE", "TR-TR", "EN-AU", "EN-CA", "EN-HK", "EN-IN", "EN-NZ", "EN-SG", "EN-US", "ES-AR", "ES-CL", "ES-CO", "ES-MX", "JA-JP", "KO-KR", "PT-BR", /*"ZH-CN",*/ /*"ZH-HK", "ZH-TW"*/];
 
 const urlRegionArray = urlRegionArrayFull.filter((e, i, a) => a.indexOf(e) === i);
 
@@ -15,11 +24,17 @@ var langPresentArray = [];
 
 var currencyChUrl = 'https://www.cbr-xml-daily.ru/daily_json.js';
 console.time('CollectAllData');
-GetAllData().then(() => {
-    //WriteData();
-    console.log("FINISHED");
-    console.timeEnd('CollectAllData');
-});
+GetAllData()
+    .then(() => {
+        console.log("Getting description for EN language..");
+        GetDescriptions("en-us")
+            .then(() => {
+                WriteData();
+                console.log("FINISHED");
+                console.timeEnd('CollectAllData');
+            });
+    })
+
 
 async function GetAllData() {
     await GetChangeData();
@@ -51,7 +66,7 @@ async function GetDataFromCountry(urlRegion) {
 
     recoUrl = recoUrl.replace("US", countryCode).replace("EN", regionLang);
 
-    const res = await fetch(recoUrl + skip);
+    const res = await fetch(recoUrl + skip, { headers: headers });
     const json = await res.json();
     totalItems = +json.PagingInfo.TotalItems;
     json.Items.forEach(e => {
@@ -63,7 +78,7 @@ async function GetDataFromCountry(urlRegion) {
     var index = 0;
     do {
         prom_arr[index++] = new Promise((resolve, reject) => {
-            fetch(recoUrl + skip).then((res) => res.json()).then((json) => resolve(json)).catch((err) => console.log(err));
+            fetch(recoUrl + skip, { headers: headers }).then((res) => res.json()).then((json) => resolve(json)).catch((err) => console.log(err));
         });
         skip += 200;
     } while (skip < totalItems);
@@ -75,18 +90,25 @@ async function GetDataFromCountry(urlRegion) {
             })
         })
     })
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
     var r = array_ids;
     var gamesUrl = 'https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=GAMEIDS&market=' + countryCode + '&languages=' + regionLang + '&MS-CV=DGU1mcuYo0WMMp+F.1';
     let chunk = 0;
     for (let i = 0; i < Math.ceil(r.length / 10); i++) {
+        //await sleep(500);
+        //console.log("sleep" + i);
         let tmpArr = r.slice(chunk, chunk + 10);
         chunk += 10;
         let tmpGameUrl = gamesUrl.replace('GAMEIDS', tmpArr.join(','));
         gamePromiseArray[i] = new Promise((resolve, reject) =>
-            fetch(tmpGameUrl)
+            fetch(tmpGameUrl, { headers: headers })
                 .then(res => res.json())
                 .then(json => resolve(json)))
-            .catch((err) => { console.log(err); reject() });
+            .catch((err) => { console.log(err); });
     }
     await Promise.all(gamePromiseArray).then(data => {
         data.forEach((e) => {
@@ -96,9 +118,9 @@ async function GetDataFromCountry(urlRegion) {
 }
 async function GetChangeData() {
     let data = fs.readFileSync('./data/currency_DO-NOT-DELETE.json', (err) => {
-         err ? console.log(err) : null
-     });
-     currencyDict = JSON.parse(data);
+        err ? console.log(err) : null
+    });
+    currencyDict = JSON.parse(data);
 
     // var myHeaders = new Headers();
     // myHeaders.append("apikey", "CEAsqALWnEqO9mUFw6YQGd4SFfFmEFsA");
@@ -399,30 +421,6 @@ function ParseData(jsonData, urlRegion) {
         }
         allGamesPrices[e.ProductId] = tmp_market;
 
-
-        let isLangPresent = false;
-        if (typeof allGamesDescriptions[e.ProductId] === 'undefined') {
-            tmp_desc = [];
-        }
-        else {
-            tmp_desc = allGamesDescriptions[e.ProductId];
-        }
-
-        tmp_desc.forEach((e) => {
-            if (e.lang == languageCode) {
-                isLangPresent = true;
-            }
-        })
-
-        if (!isLangPresent) {
-            tmp_desc.push({
-                title: title,
-                lang: languageCode,
-                shortdesc: shortdesc
-            });
-            allGamesDescriptions[e.ProductId] = tmp_desc;
-        }
-        
         // END MARKETS
         //tmpLangDict[languageCode] = shortdesc;
 
@@ -463,6 +461,50 @@ function ParseData(jsonData, urlRegion) {
         };
     })
 }
+async function GetDescriptions(region) {
+    var gamePromiseArray = [];
+    let ids_array = [];
+    Object.entries(allGames).forEach((entry) => {
+        const [key, value] = entry;
+        ids_array.push(key);
+    });
+    const languageCode = region.split("-")[0].toUpperCase();
+    const countryCode = region.split("-")[1].toUpperCase();
+
+    var r = ids_array;
+    var gamesUrl = 'https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=GAMEIDS&market=' + countryCode + '&languages=' + languageCode + '&MS-CV=DGU1mcuYo0WMMp+F.1';
+    let chunk = 0;
+    for (let i = 0; i < Math.ceil(r.length / 10); i++) {
+        let tmpArr = r.slice(chunk, chunk + 10);
+        chunk += 10;
+        let tmpGameUrl = gamesUrl.replace('GAMEIDS', tmpArr.join(','));
+        gamePromiseArray[i] = new Promise((resolve, reject) =>
+            fetch(tmpGameUrl)
+                .then(res => res.json())
+                .then(json => resolve(json)))
+            .catch((err) => { console.log(err); reject() });
+    }
+    await Promise.all(gamePromiseArray).then(data => {
+        data.forEach((json) => {
+            json.Products.forEach((e, i) => {
+                var title = e.LocalizedProperties[0].ProductTitle;
+                var shortdesc = e.LocalizedProperties[0].ShortDescription;
+                if (shortdesc === "") {
+                    shortdesc = e.LocalizedProperties[0].ProductDescription;
+                }
+                if (shortdesc === undefined) {
+                    shortdesc = "";
+                }
+                allGamesDescriptions[e.ProductId] = {
+                    lang: languageCode,
+                    title: title,
+                    description: shortdesc
+                }
+            })
+        })
+    })
+}
+
 function WriteData(country) {
     fs.writeFile(`./data/gamesDataRU.json`, JSON.stringify(allGames), (error) => {
         error ? console.log(error) : null;

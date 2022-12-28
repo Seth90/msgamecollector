@@ -34,12 +34,12 @@
                     <input type="text" class="searchInput" v-model="searchText" placeholder="LEGO">
                     <img class="search_img" src="imgs/search.svg" alt="" width="15" height="15">
 
-                    <select reqired name="" @change="onChange($event)" class="langSelect" id="" v-model="language">
+                    <!-- <select reqired name="" @change="onChange($event)" class="langSelect" id="" v-model="language">
                         <option value="" disabled selected>Select language</option>
                         <option value="RU">RU</option>
                         <option value="US">US</option>
                         <option value="AR">AR</option>
-                    </select>
+                    </select> -->
                 </div>
                 <!-- <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div> -->
                 
@@ -68,17 +68,16 @@
                         <div class="price">
                             <div class="country_price target">
                                 <div>
+                                    <img class="item_flag" :src="flags[item.country_target]">
                                     {{item.country_target}}
                                 </div>
-                                <div>
-                                    <img class="item_flag" :src="flags[item.country_target]">
-                                </div>
-                                <div>
-                                    <s>{{item.msrp_target}} {{item.currency_target}}</s>
-                                </div>
-                                <div class="bold_price">
+                                <div class="bold-price">
                                     {{item.lprice_target}} {{item.currency_target}}
                                 </div>
+                                <div class="small-price">
+                                    <s>{{item.msrp_target}} {{item.currency_target}}</s>
+                                </div>
+                                
                             </div>
                         </div>
                         <div class="buttons">

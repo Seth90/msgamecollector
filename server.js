@@ -69,29 +69,15 @@ app.get('/getPosters', (req, res) => {
 })
 app.get('/getDescriptions', (req, res) => {
     console.log(req.url);
-    const lang = req.query.lang;
-
-    let requiredFilename = `./data/gamesDataDescriptions.json`;
-    if (fs.existsSync(requiredFilename)) {
-        let data = fs.readFileSync(requiredFilename, (err) => {
+    if (fs.existsSync('./data/gamesDataPosters.json')) {
+        let data = fs.readFileSync('./data/gamesDataDescriptions.json', (err) => {
             err ? console.log(err) : null
         });
-
-        let full_lang_data = JSON.parse(data);
-        let lang_data_4send = {};
-        Object.entries(full_lang_data).forEach((entry) => {
-            const [key, value] = entry;
-                value.forEach((e) => {
-                    if (e.lang === lang) {
-                        lang_data_4send[key] = e;
-                    }
-                })
-        })
-
+        console.log(`Data: ОК`);
         res.header("Access-Control-Allow-Origin", "*");
         res.header("Access-Control-Allow-Headers", "X-Requested-With");
         res.header("Content-Type", "application/json");
-        res.end(JSON.stringify(lang_data_4send));
+        res.end(data);
         console.log('OK')
     }
     else {

@@ -97,8 +97,8 @@ h2 {
 }
 
 .item_flag {
-  width: 30px;
-  height: 20px;
+  width: 20px;
+  height: 15px;
 }
 
 .searchInput {
@@ -110,8 +110,12 @@ h2 {
   width: 150px;
 }
 
-.bold_price {
+.bold-price {
   font-weight: bold;
+}
+
+.small-price {
+  font-size: 13px;
 }
 
 .tooltip {
