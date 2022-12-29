@@ -66,7 +66,9 @@ const App = {
             clientX: 0,
             clientY: 0,
             wasLoaded: false,
-            language: 'AR'
+            language: 'AR',
+            selectedCurrency: '',
+            notCurrencyLoaded: true
         }
     },
     mounted() {
@@ -90,62 +92,64 @@ const App = {
             };
             var json = {};
             // console.log('......')
-            const response = await fetch('http://127.0.0.1:3000/getGames', options);
+            const response = await fetch('http://127.0.0.1:3000/getGames', options).catch((err)=> console.log("Error fetching"));
             if (response.ok) {
                 json = await response.json();
                 //console.log(json);
-                this.GetData(target = 'getPrices').then((data) => {
-                    Object.entries(data).forEach((entry) => {
-                        const [key, value] = entry;
-                        //!!!!! Присваивание осуществляется для каждого, кто соответствует минимальному !!!!//
-                        var min = 1000000;
-                        var m_t, l_t, c_t, cnt_t = 0;
-                        value.forEach((e, i) => {
-                            //console.log("-----");
-                            if (e.lprice < min) {
-                                //console.log(key, e.lprice, e.currency, e.country);
-                                m_t = e.msrp;
-                                l_t = e.lprice;
-                                c_t = e.currency;
-                                cnt_t = e.country;
-                                min = e.lprice;
-                            }
-                            // if (e.country == 'RU') {
-                            //     this.jsonData[key].msrp_origin = e.msrp;
-                            //     this.jsonData[key].lprice_origin = e.lprice;
-                            //     this.jsonData[key].currency_origin = e.currency;
-                            //     this.jsonData[key].country_origin = e.country;
-                            // }
-                        })
-                        this.jsonData[key].msrp_target = m_t;
-                        this.jsonData[key].lprice_target = l_t;
-                        this.jsonData[key].currency_target = c_t;
-                        this.jsonData[key].country_target = this.сountriesShortToFull[cnt_t];
-                    });
-                });
-                this.GetData(target = 'getPosters').then((data) => {
-                    Object.entries(data).forEach((entry) => {
-                        const [key, value] = entry;
-                        this.jsonData[key].boxshotsmall = value;
-                    })
-                });
-                this.GetData(target = 'getDescriptions').then((data) => {
-                    Object.entries(data).forEach((entry) => {
-                        const [key, value] = entry;
-                        this.jsonData[key].title = value.title;
-                        this.jsonData[key].description = value.description;
-                        //console.log(value.shortdesc);
-                        this.jsonData[key].shortDescription = String(value.description).substring(0, 300) + '...';
-                    })
-                })
+                this.GetAdditionalInfo();
             }
             else {
-                //console.log('Response not OK');
+                console.log('Response for "getGames" not OK');
             }
-
-            //this.filterList();
             return json;
         },
+        GetAdditionalInfo () {
+            this.GetData(target = 'getPrices').then((data) => {
+                Object.entries(data).forEach((entry) => {
+                    const [key, value] = entry;
+                    //!!!!! Присваивание осуществляется для каждого, кто соответствует минимальному !!!!//
+                    var min = 1000000;
+                    var m_t, l_t, c_t, cnt_t = 0;
+                    value.forEach((e, i) => {
+                        //console.log("-----");
+                        if (e.lprice < min) {
+                            //console.log(key, e.lprice, e.currency, e.country);
+                            m_t = e.msrp;
+                            l_t = e.lprice;
+                            c_t = e.currency;
+                            cnt_t = e.country;
+                            min = e.lprice;
+                        }
+                        // if (e.country == 'RU') {
+                        //     this.jsonData[key].msrp_origin = e.msrp;
+                        //     this.jsonData[key].lprice_origin = e.lprice;
+                        //     this.jsonData[key].currency_origin = e.currency;
+                        //     this.jsonData[key].country_origin = e.country;
+                        // }
+                    })
+                    this.jsonData[key].msrp_target = m_t;
+                    this.jsonData[key].lprice_target = l_t;
+                    this.jsonData[key].currency_target = c_t;
+                    this.jsonData[key].country_target = this.сountriesShortToFull[cnt_t];
+                });
+            });
+            this.GetData(target = 'getPosters').then((data) => {
+                Object.entries(data).forEach((entry) => {
+                    const [key, value] = entry;
+                    this.jsonData[key].boxshotsmall = value;
+                })
+            });
+            this.GetData(target = 'getDescriptions').then((data) => {
+                Object.entries(data).forEach((entry) => {
+                    const [key, value] = entry;
+                    this.jsonData[key].title = value.title;
+                    this.jsonData[key].description = value.description;
+                    //console.log(value.shortdesc);
+                    this.jsonData[key].shortDescription = String(value.description).substring(0, 300) + '...';
+                })
+            })
+        },
+        
         async GetData(target) {
             let options = {
                 method: 'GET',

@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
-const { title } = require('process');
 
 let headers = new Headers({
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -10,19 +9,18 @@ let headers = new Headers({
     "User-Agent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Mobile Safari/537.36"
 });
 
-var urlRegionArrayFull = ["AR-AE"/*, "AR-SA", "CS-CZ", "DA-DK", "DE-AT", "DE-CH", "DE-DE", "EL-GR", "EN-AE", "EN-GB", "EN-IE", "EN-ZA", "ES-CO", "ES-ES", "FI-FI", "FR-BE", "FR-CH", "FR-FR", "HE-IL", "HU-HU", "IT-IT", "NB-NO", "NL-BE", "NL-NL", "PL-PL", "PT-PT", "RU-RU", "SK-SK", "SV-SE", "TR-TR", "EN-AU", "EN-CA", "EN-HK", "EN-IN", "EN-NZ", "EN-SG", "EN-US", "ES-AR", "ES-CL", "ES-CO", "ES-MX", "JA-JP", "KO-KR", "PT-BR", /*"ZH-CN",*/ /*"ZH-HK", "ZH-TW"*/];
+var urlRegionArrayFull = ["AR-AE", "AR-SA", "CS-CZ", "DA-DK", "DE-AT", "DE-CH", "DE-DE", "EL-GR", "EN-AE", "EN-GB", "EN-IE", "EN-ZA", "ES-CO", "ES-ES", "FI-FI", "FR-BE", "FR-CH", "FR-FR", "HE-IL", "HU-HU", "IT-IT", "NB-NO", "NL-BE", "NL-NL", "PL-PL", "PT-PT", "RU-RU", "SK-SK", "SV-SE", "TR-TR", "EN-AU", "EN-CA", "EN-HK", "EN-IN", "EN-NZ", "EN-SG", "EN-US", "ES-AR", "ES-CL", "ES-CO", "ES-MX", "JA-JP", "KO-KR", "PT-BR", /*"ZH-CN",*/ "ZH-HK", "ZH-TW"];
 
 const urlRegionArray = urlRegionArrayFull.filter((e, i, a) => a.indexOf(e) === i);
 
-var country_promise = [];
 var allGames = {};
 var allGamesPrices = {};
 var allGamesPosters = {};
 var allGamesDescriptions = {};
 var currencyDict = {};
-var langPresentArray = [];
 
 var currencyChUrl = 'https://www.cbr-xml-daily.ru/daily_json.js';
+// MAIN //
 console.time('CollectAllData');
 GetAllData()
     .then(() => {
@@ -34,21 +32,22 @@ GetAllData()
                 console.timeEnd('CollectAllData');
             });
     })
-
-
+// END MAIN //
 async function GetAllData() {
     await GetChangeData();
-
     for (let i = 0; i < urlRegionArray.length; i++) {
-        //allGamesDescriptions = {};
-
         console.log(`Progress: ${i + 1} / ${urlRegionArray.length}`);
+        
+        await sleep(1000); //Задержка между странами
+
         const urlRegion = urlRegionArray[i];
         console.log(urlRegion.toUpperCase());
         const languageCode = urlRegion.split("-")[0].toUpperCase();
         //const countryCode = urlRegion.split("-")[1].toUpperCase();
         console.time('CollectingItems');
+
         await GetDataFromCountry(urlRegion);
+
         console.timeEnd('CollectingItems');
         console.log('--------------');
 
@@ -91,16 +90,18 @@ async function GetDataFromCountry(urlRegion) {
         })
     })
 
-    function sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    
 
     var r = array_ids;
     var gamesUrl = 'https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=GAMEIDS&market=' + countryCode + '&languages=' + regionLang + '&MS-CV=DGU1mcuYo0WMMp+F.1';
     let chunk = 0;
     for (let i = 0; i < Math.ceil(r.length / 10); i++) {
-        //await sleep(500);
-        //console.log("sleep" + i);
+
+        if (i === 40) {
+            await sleep(1000);
+            console.log("sleep" + i);
+        }
+
         let tmpArr = r.slice(chunk, chunk + 10);
         chunk += 10;
         let tmpGameUrl = gamesUrl.replace('GAMEIDS', tmpArr.join(','));
@@ -108,7 +109,8 @@ async function GetDataFromCountry(urlRegion) {
             fetch(tmpGameUrl, { headers: headers })
                 .then(res => res.json())
                 .then(json => resolve(json)))
-            .catch((err) => { console.log(err); });
+            .catch((err) => {
+            });
     }
     await Promise.all(gamePromiseArray).then(data => {
         data.forEach((e) => {
@@ -141,6 +143,49 @@ async function GetChangeData() {
     //         });
     //     })
     //     .catch(error => console.log('error', error));
+}
+async function GetDescriptions(region) {
+    var gamePromiseArray = [];
+    let ids_array = [];
+    Object.entries(allGames).forEach((entry) => {
+        const [key, value] = entry;
+        ids_array.push(key);
+    });
+    const languageCode = region.split("-")[0].toUpperCase();
+    const countryCode = region.split("-")[1].toUpperCase();
+
+    var r = ids_array;
+    var gamesUrl = 'https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=GAMEIDS&market=' + countryCode + '&languages=' + languageCode + '&MS-CV=DGU1mcuYo0WMMp+F.1';
+    let chunk = 0;
+    for (let i = 0; i < Math.ceil(r.length / 10); i++) {
+        let tmpArr = r.slice(chunk, chunk + 10);
+        chunk += 10;
+        let tmpGameUrl = gamesUrl.replace('GAMEIDS', tmpArr.join(','));
+        gamePromiseArray[i] = new Promise((resolve, reject) =>
+            fetch(tmpGameUrl)
+                .then(res => res.json())
+                .then(json => resolve(json)))
+            .catch((err) => { console.log(err); reject() });
+    }
+    await Promise.all(gamePromiseArray).then(data => {
+        data.forEach((json) => {
+            json.Products.forEach((e, i) => {
+                var title = e.LocalizedProperties[0].ProductTitle;
+                var shortdesc = e.LocalizedProperties[0].ShortDescription;
+                if (shortdesc === "") {
+                    shortdesc = e.LocalizedProperties[0].ProductDescription;
+                }
+                if (shortdesc === undefined) {
+                    shortdesc = "";
+                }
+                allGamesDescriptions[e.ProductId] = {
+                    lang: languageCode,
+                    title: title,
+                    description: shortdesc
+                }
+            })
+        })
+    })
 }
 function ParseData(jsonData, urlRegion) {
     const languageCode = urlRegion.split("-")[0].toUpperCase();
@@ -461,50 +506,6 @@ function ParseData(jsonData, urlRegion) {
         };
     })
 }
-async function GetDescriptions(region) {
-    var gamePromiseArray = [];
-    let ids_array = [];
-    Object.entries(allGames).forEach((entry) => {
-        const [key, value] = entry;
-        ids_array.push(key);
-    });
-    const languageCode = region.split("-")[0].toUpperCase();
-    const countryCode = region.split("-")[1].toUpperCase();
-
-    var r = ids_array;
-    var gamesUrl = 'https://displaycatalog.mp.microsoft.com/v7.0/products?bigIds=GAMEIDS&market=' + countryCode + '&languages=' + languageCode + '&MS-CV=DGU1mcuYo0WMMp+F.1';
-    let chunk = 0;
-    for (let i = 0; i < Math.ceil(r.length / 10); i++) {
-        let tmpArr = r.slice(chunk, chunk + 10);
-        chunk += 10;
-        let tmpGameUrl = gamesUrl.replace('GAMEIDS', tmpArr.join(','));
-        gamePromiseArray[i] = new Promise((resolve, reject) =>
-            fetch(tmpGameUrl)
-                .then(res => res.json())
-                .then(json => resolve(json)))
-            .catch((err) => { console.log(err); reject() });
-    }
-    await Promise.all(gamePromiseArray).then(data => {
-        data.forEach((json) => {
-            json.Products.forEach((e, i) => {
-                var title = e.LocalizedProperties[0].ProductTitle;
-                var shortdesc = e.LocalizedProperties[0].ShortDescription;
-                if (shortdesc === "") {
-                    shortdesc = e.LocalizedProperties[0].ProductDescription;
-                }
-                if (shortdesc === undefined) {
-                    shortdesc = "";
-                }
-                allGamesDescriptions[e.ProductId] = {
-                    lang: languageCode,
-                    title: title,
-                    description: shortdesc
-                }
-            })
-        })
-    })
-}
-
 function WriteData(country) {
     fs.writeFile(`./data/gamesDataRU.json`, JSON.stringify(allGames), (error) => {
         error ? console.log(error) : null;
@@ -518,4 +519,7 @@ function WriteData(country) {
     fs.writeFile(`./data/gamesDataPosters.json`, JSON.stringify(allGamesPosters), (error) => {
         error ? console.log(error) : null;
     });
+}
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
