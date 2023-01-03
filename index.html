@@ -34,11 +34,9 @@
                     <input type="text" class="searchInput" v-model="searchText" placeholder="LEGO">
                     <img class="search_img" src="imgs/search.svg" alt="" width="15" height="15">
 
-                    <select reqired name="" @change="onChange($event)" :class="{hidden: notCurrencyLoaded}" class="currencySelect" id="" v-model="selectedCurrency">
-                        <option value="" disabled selected>Select currency</option>
-                        <option value="USD">USD</option>
-                        <option value="RUB">RUB</option>
-                        <option value="AR">AR</option>
+                    <select reqired name="" :class="{hidden: notCurrencyLoaded}" class="currencySelect" id="" v-model="selectedCurrency">
+                        <option value="" disabled selected>Выберите валюту</option>
+                        <option v-for="currency in currencyList" :value="currency">{{currency}}</option>
                     </select>
 
                     <!-- <select reqired name="" @change="onChange($event)" class="langSelect" id="" v-model="language">

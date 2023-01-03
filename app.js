@@ -10,8 +10,7 @@ const App = {
             total: 0,
             current: 0,
             isHidden: true,
-            country_flag_origin: '',
-            country_flag_target: '',
+            /* Словарь соответствий изображений флага и страны */
             flags: {
                 "U.A.E.": "./imgs/flags/ae.png",
                 "Russia": "./imgs/flags/ru.png",
@@ -37,6 +36,7 @@ const App = {
                 "Taiwan": "./imgs/flags/tw.webp",
                 "Norway": "./imgs/flags/no.webp"
             },
+            /* Словарь соответствий кодf страны и её полного названия */
             сountriesShortToFull: {
                 "RU": "Russia",
                 "AE": "U.A.E.",
@@ -62,12 +62,36 @@ const App = {
                 "TW": "Taiwan",
                 "NO": "Norway"
             },
-            show: false,
-            clientX: 0,
-            clientY: 0,
+            /* Словарь соответствий страны и её кода (код языка + код страны) для получения правильной ссылки на магазин xbox */
+            urlRegion: {
+                "RU": "RU-RU",
+                "AE": "AR-AE",
+                "AR": "ES-AR",
+                "TR": "TR-TR",
+                "MX": "ES-MX",
+                "IN": "EN-IN",
+                "JP": "JA-JP",
+                "BR": "PT-BR",
+                "KR": "KO-KR",
+                "IT": "IT-IT",
+                "CA": "EN-CA",
+                "HU": "HU-HU",
+                "ZA": "EN-ZA",
+                "US": "EN-US",
+                "GB": "EN-GB",
+                "CO": "ES-CO",
+                "AU": "EN-AU",
+                "SE": "SV-SE",
+                "DE": "DE-DE",
+                "NZ": "EN-NZ",
+                "FR": "FR-FR",
+                "TW": "ZH-TW",
+                "NO": "NB-NO"
+            },
             wasLoaded: false,
-            language: 'AR',
             selectedCurrency: '',
+            currencyList: ['USD'],
+            currencyObject: {},
             notCurrencyLoaded: true
         }
     },
@@ -92,7 +116,7 @@ const App = {
             };
             var json = {};
             // console.log('......')
-            const response = await fetch('http://127.0.0.1:3000/getGames', options).catch((err)=> console.log("Error fetching"));
+            const response = await fetch('http://127.0.0.1:3000/getGames', options).catch((err) => console.log("Error fetching"));
             if (response.ok) {
                 json = await response.json();
                 //console.log(json);
@@ -103,7 +127,15 @@ const App = {
             }
             return json;
         },
-        GetAdditionalInfo () {
+        GetAdditionalInfo() {
+            this.GetData(target = 'getExchanges').then((data) => {
+                this.currencyObject = data.quotes;
+                Object.entries(data.quotes).forEach((entry) => {
+                    const [key, value] = entry;
+                    this.currencyList.push(key.substring(3, 6));
+                })
+                this.notCurrencyLoaded = false;
+            });
             this.GetData(target = 'getPrices').then((data) => {
                 Object.entries(data).forEach((entry) => {
                     const [key, value] = entry;
@@ -127,18 +159,25 @@ const App = {
                         //     this.jsonData[key].country_origin = e.country;
                         // }
                     })
+                    this.jsonData[key].msrp_usd = m_t;
+                    this.jsonData[key].lprice_usd = l_t;
                     this.jsonData[key].msrp_target = m_t;
                     this.jsonData[key].lprice_target = l_t;
                     this.jsonData[key].currency_target = c_t;
                     this.jsonData[key].country_target = this.сountriesShortToFull[cnt_t];
+                    if (this.urlRegion[cnt_t]) {
+                        this.jsonData[key].url = this.jsonData[key].url.replace('en-us', this.urlRegion[cnt_t]);
+                    }
                 });
             });
+            /* Получение постеров */
             this.GetData(target = 'getPosters').then((data) => {
                 Object.entries(data).forEach((entry) => {
                     const [key, value] = entry;
                     this.jsonData[key].boxshotsmall = value;
                 })
             });
+            /* Получение описаний */
             this.GetData(target = 'getDescriptions').then((data) => {
                 Object.entries(data).forEach((entry) => {
                     const [key, value] = entry;
@@ -149,7 +188,7 @@ const App = {
                 })
             })
         },
-        
+        /* Функция получения json-данных с сервера*/
         async GetData(target) {
             let options = {
                 method: 'GET',
@@ -175,21 +214,20 @@ const App = {
         // },
         // onChange(event) {
         //     console.log(event.target.value)
-        //     this.GetData(target = 'getDescriptions?lang=' + this.language).then((data) => {
-        //         Object.entries(data).forEach((entry) => {
-        //             const [key, value] = entry;
-        //             this.jsonData[key].title = value.title;
-        //             this.jsonData[key].description = value.shortdesc;
-        //             console.log(value.shortdesc);
-        //             this.jsonData[key].shortDescription = String(value.shortdesc).substring(0, 300) + '...';
-        //         })
+        //     console.log(this.selectedCurrency)
+        //     Object.entries(this.jsonData).forEach((entry) => {
+        //         const [key, value] = entry;
+        //         //     this.jsonData[key].title = value.title;
+        //         //     this.jsonData[key].description = value.shortdesc;
+        //         //     console.log(value.shortdesc);
+        //         //     this.jsonData[key].shortDescription = String(value.shortdesc).substring(0, 300) + '...';
         //     })
         // }
     },
     computed: {
         filterList() {
             var tmpArr = [];
-            //console.log('filterlist');
+            /* -----Фильтрация по типу----- */
             if (this.selectedType && this.selectedType !== "All") {
                 tmpArr = this.arr.filter(e => e.type === this.selectedType);
                 //this.current = tmpArr.length;
@@ -197,10 +235,14 @@ const App = {
             else {
                 tmpArr = this.arr;
             }
+            /* -----END Фильтрация по типу----- */
 
+            /* -----Фильтрация по строке поиска----- */
             tmpArr = tmpArr.filter(e =>
                 e.title.toLowerCase().includes(this.searchText.toLowerCase()));
+            /* -----END Фильтрация по строке поиска----- */
 
+            /* Прячет список на время загрузки */
             if (this.wasLoaded) {
                 if (tmpArr.length === 0) {
                     this.isHidden = false;
@@ -213,7 +255,27 @@ const App = {
                 this.isHidden = true;
             }
             // this.isHidden = (tmpArr.length && this.wasLoaded) ? true : false;
+
+            /* Количество элементов после фильтрации */
             this.current = tmpArr.length;
+            /* ----- Пересчет в выбранную валюту ---- */
+            if (this.selectedCurrency !== '') {
+                if (this.selectedCurrency !== 'USD') {
+                    tmpArr.map((e) => {
+                        e.currency_target = this.selectedCurrency;
+                        e.lprice_target = Math.round(this.currencyObject['USD' + this.selectedCurrency] * e.lprice_usd * 100) / 100;
+                        e.msrp_target = Math.round(this.currencyObject['USD' + this.selectedCurrency] * e.msrp_usd * 100) / 100;
+                    })
+                }
+                else {
+                    tmpArr.map((e) => {
+                        e.currency_target = this.selectedCurrency;
+                        e.lprice_target = e.lprice_usd;
+                        e.msrp_target = e.msrp_usd;
+                    })
+                }
+            }
+            /* -----END Пересчет в выбранную валюту ---- */
             return tmpArr;
         },
     }

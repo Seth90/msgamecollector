@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const fs = require('fs');
+const { setMaxIdleHTTPParsers } = require('http');
 
 let headers = new Headers({
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
@@ -119,10 +120,15 @@ async function GetDataFromCountry(urlRegion) {
     })
 }
 async function GetChangeData() {
+
+    /* ----- Получение данных обмена из файла -----*/
     let data = fs.readFileSync('./data/currency_DO-NOT-DELETE.json', (err) => {
         err ? console.log(err) : null
     });
-    currencyDict = JSON.parse(data);
+    currencyDict = JSON.parse(data).quotes;
+    console.log('Get currency_data FROM FILE - ok');
+
+    /* ----- Получение данных обмена с сайта apilayer.com -----*/
 
     // var myHeaders = new Headers();
     // myHeaders.append("apikey", "CEAsqALWnEqO9mUFw6YQGd4SFfFmEFsA");
@@ -132,13 +138,14 @@ async function GetChangeData() {
     //     redirect: 'follow',
     //     headers: myHeaders
     // };
-
-    // await fetch("https://api.apilayer.com/currency_data/change?source=USD&start_date=2022-12-06&end_date=2022-12-06", requestOptions)
+    // let changeUrl = 'https://api.apilayer.com/currency_data/live?base=USD';
+    // //let changeUrl = 'https://api.apilayer.com/currency_data/change?source=USD&start_date=2023-01-02&end_date=2023-01-02';
+    // await fetch(changeUrl, requestOptions)
     //     .then(response => response.json())
     //     .then(result => {
     //         currencyDict = result.quotes;
     //         console.log('Get currency_data - ok');
-    //         fs.writeFile(`./data/currency.json`, JSON.stringify(result), (error) => {
+    //         fs.writeFile(`./data/currency_DO-NOT-DELETE.json`, JSON.stringify(result), (error) => {
     //             error ? console.log(error) : null;
     //         });
     //     })
@@ -198,7 +205,7 @@ function ParseData(jsonData, urlRegion) {
         //get prices
         var listprice;
         var msrpprice;
-        var currencycode;
+        var currencycode = '';
         var onsale = "false";
         var gwg = "false";
         var golddiscount = "false"; // deals with gold ... and gold member sale prices?
@@ -431,18 +438,21 @@ function ParseData(jsonData, urlRegion) {
         var tmp_dict = {};
         var tmp_desc = [];
         var tmp_lang_dict = {};
-
+        var myCurrencyCode = '';
 
         // if (currencyDict[currencycode]) {
         //     msrpprice = Math.round(msrpprice * (currencyDict[currencycode].Value / currencyDict[currencycode].Nominal) * 100) / 100;
         //     listprice = Math.round(listprice * (currencyDict[currencycode].Value / currencyDict[currencycode].Nominal) * 100) / 100;
         //     currencycode = 'RUB';
         // }
-        let changename = "RUB" + currencycode.toUpperCase();
+        let changename = 'USD' + currencycode.toUpperCase();
         if (currencyDict[changename]) {
-            msrpprice = Math.round((msrpprice / currencyDict[changename].start_rate) * 100) / 100;
-            listprice = Math.round((listprice / currencyDict[changename].start_rate) * 100) / 100;
-            currencycode = 'RUB';
+            msrpprice = Math.round(msrpprice / currencyDict[changename] * 100) / 100;
+            listprice = Math.round(listprice / currencyDict[changename] * 100) / 100;
+            myCurrencyCode = 'USD';
+        }
+        else {
+            myCurrencyCode = currencycode;
         }
 
         if (typeof allGamesPrices[e.ProductId] === 'undefined') {
@@ -450,7 +460,7 @@ function ParseData(jsonData, urlRegion) {
                 country: countryCode,
                 msrp: msrpprice,
                 lprice: listprice,
-                currency: currencycode
+                currency: myCurrencyCode
             }
             tmp_market.push(tmp_dict);
         }
@@ -459,7 +469,7 @@ function ParseData(jsonData, urlRegion) {
                 country: countryCode,
                 msrp: msrpprice,
                 lprice: listprice,
-                currency: currencycode
+                currency: myCurrencyCode
             }
             tmp_market = allGamesPrices[e.ProductId];
             tmp_market.push(tmp_dict);
