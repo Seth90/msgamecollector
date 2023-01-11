@@ -8,9 +8,13 @@
     <title>Document</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@3.0.6/dist/vuetify.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/main.css">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@3.0.6/dist/vuetify.min.js" defer></script>
     <script src="app.js" defer></script>
 </head>
 
@@ -25,7 +29,7 @@
             <div class="search_container">
                 <div class="search_input">
                     <select reqired name="" class="typeSelect" id="" v-model="selectedType">
-                        <option value="" disabled selected>Select Type</option>
+                        <option value="" disabled selected>Тип</option>
                         <option value="All">All</option>
                         <option value="Game">Game</option>
                         <option value="Durable">Durable</option>
@@ -34,7 +38,8 @@
                     <input type="text" class="searchInput" v-model="searchText" placeholder="LEGO">
                     <img class="search_img" src="imgs/search.svg" alt="" width="15" height="15">
 
-                    <select reqired name="" :class="{hidden: notCurrencyLoaded}" class="currencySelect" id="" v-model="selectedCurrency">
+                    <select reqired name="" :class="{hidden: notCurrencyLoaded}" class="currencySelect" id=""
+                        v-model="selectedCurrency">
                         <option value="" disabled selected>Выберите валюту</option>
                         <option v-for="currency in currencyList" :value="currency">{{currency}}</option>
                     </select>
@@ -47,7 +52,7 @@
                     </select> -->
                 </div>
                 <!-- <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div> -->
-                
+
             </div>
             <div :class="{hidden: isHidden}">Ничего не найдено, попробуйте поискать что-то другое!</div>
             <div class="preloader" v-if="arr.length === 0">
@@ -65,9 +70,21 @@
                             <div class="title">
                                 {{item.title}}
                             </div>
+                            <div class="ecosystem">
+                                <img src="imgs/Xbox-Game-Pass-Logo.jpg" alt="" v-show="item.gamepassgame === 'true'">
+                                <img src="imgs/xbox-live-gold.png" alt="" v-show="item.goldandsilversale === 'true'">
+                                <img src="imgs/eaaccess.png" alt="" v-show="item.eaaccessgame === 'true'">
+                            </div>
                             <!-- <button @mouseover="onHover">Description</button> -->
-                            <div class="desc">
-                                <p>{{item.shortDescription}}</p>
+                            <div v-bind="props" class="desc">
+                                <p>{{item.shortDescription}}
+                                    <v-tooltip activator="parent" location="start">{{item.description}}</v-tooltip>
+                                </p>
+
+                            </div>
+                            <div class="multiplayer-options">
+                                <span v-show="item.coop === 'true'">Coop</span>
+                                <span v-show="item.multiplayer === 'true'">Multiplayer</span>
                             </div>
                         </div>
                         <div class="price">
@@ -82,7 +99,7 @@
                                 <div class="small-price">
                                     <s>{{item.msrp_target}} {{item.currency_target}}</s>
                                 </div>
-                                
+
                             </div>
                         </div>
                         <div class="buttons">

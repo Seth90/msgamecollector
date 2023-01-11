@@ -502,6 +502,7 @@ function ParseData(jsonData, urlRegion) {
             // lprice_origin: '',
             // country_origin: '',
             // currency_origin: '',
+            goldandsilversale: goldandsilversale,
             onsale: onsale,
             eaaccessgame: eaaccessgame,
             gamepassgame: gamepassgame,

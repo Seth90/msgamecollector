@@ -44,6 +44,15 @@ option {
   font-weight: bold;
 }
 
+.ecosystem {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  gap: 10px;
+  margin-top: -5px;
+  margin-bottom: 5px;
+}
+
 .poster {
   width: 140px;
   float: right;
@@ -63,6 +72,17 @@ option {
 .desc p {
   display: inline-block;
   font-style: italic;
+}
+
+.multiplayer-options {
+  font-size: 13px;
+  font-weight: bold;
+  color: grey;
+  margin-top: 5px;
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  gap: 10px;
 }
 
 h2 {

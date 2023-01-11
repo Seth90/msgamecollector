@@ -1,10 +1,12 @@
 //import { ref, onMounted } from 'vue';
+const { createVuetify } = Vuetify;
+const vuetify = createVuetify();
 const App = {
     data() {
         return {
             message: "Hello world",
             jsonData: [],
-            selectedType: null,
+            selectedType: "",
             searchText: '',
             arr: [],
             total: 0,
@@ -184,7 +186,7 @@ const App = {
                     this.jsonData[key].title = value.title;
                     this.jsonData[key].description = value.description;
                     //console.log(value.shortdesc);
-                    this.jsonData[key].shortDescription = String(value.description).substring(0, 300) + '...';
+                    this.jsonData[key].shortDescription = String(value.description).substring(0, 200) + '...';
                 })
             })
         },
@@ -281,4 +283,4 @@ const App = {
     }
 }
 
-Vue.createApp(App).mount('#app');
+Vue.createApp(App).use(vuetify).mount('#app');
