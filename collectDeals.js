@@ -131,7 +131,7 @@ async function GetChangeData() {
     /* ----- Получение данных обмена с сайта apilayer.com -----*/
 
     // var myHeaders = new Headers();
-    // myHeaders.append("apikey", "CEAsqALWnEqO9mUFw6YQGd4SFfFmEFsA");
+    // myHeaders.append("apikey", "");
 
     // var requestOptions = {
     //     method: 'GET',
